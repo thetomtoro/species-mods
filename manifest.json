@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "version": 1,
+  "enabled": true,
+  "message": "",
+  "game": {
+    "app_id": 2747330,
+    "tested_builds": [
+      "26480196"
+    ]
+  },
+  "launcher": {
+    "id": "591e4685aa58",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/launcher-591e4685aa58.ps1",
+    "sha256": "591e4685aa5873420c9a131d3bdc0b2f084af138e845bf2498dbdd36e2add6dd"
+  },
+  "loader": {
+    "id": "5fb3620683c1",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/loader-5fb3620683c1.zip",
+    "sha256": "80764c4aee6f643852b8ea0069e415eee1b028cbf0db4463de79ba2f09fde74f",
+    "size": 9271318
+  },
+  "mods": {
+    "id": "0cc9cf7d7f52",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-0cc9cf7d7f52.zip",
+    "sha256": "b15c7e17e2b537b21f8be46aa0345415d526878b2f20f97ec519544b2426d7b7",
+    "size": 6606,
+    "list": [
+      {
+        "name": "EncounterVariety"
+      }
+    ]
+  }
+}
