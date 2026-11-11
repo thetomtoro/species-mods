@@ -8,6 +8,7 @@ param(
     [string]$HomeDir = (Join-Path $env:LOCALAPPDATA 'SpeciesMods'),
     [string]$SteamLibrary = '',
     [string]$DesktopDir = '',
+    [string]$ConfigDir = (Join-Path $env:LOCALAPPDATA 'SpeciesUnknown\Saved\Config\Windows'),
     [switch]$NoLaunch,
     [switch]$NoPause,
     [switch]$SelfUpdated
@@ -136,15 +137,117 @@ function Get-State($Game) {
     return $null
 }
 function Set-State($Game, $Manifest, [string[]]$ModNames) {
+    $old = Get-State $Game
     $state = [ordered]@{
         pack          = $Manifest.version
         loader        = $Manifest.loader.id
         mods          = $Manifest.mods.id
         mod_names     = @($ModNames)
+        content       = $(if ($old) { $old.content } else { $null })
+        content_files = $(if ($old -and $old.content_files) { @($old.content_files) } else { @() })
+        engine_ini    = $(if ($old -and $old.engine_ini) { @($old.engine_ini) } else { @() })
         tested_builds = @($Manifest.game.tested_builds)
         updated       = (Get-Date -Format 's')
     }
     $state | ConvertTo-Json | Set-Content -Path (Get-StatePath $Game) -Encoding UTF8
+}
+
+# Mod content (new monsters and the like) lives in the game's Content\Paks\~mods folder, and the game is told to
+# load it by one line in its Engine.ini. Both are switched together with the loader: content files are parked by
+# adding ".off" to their names, and the line is added or taken out. The line must never be present without the
+# content, or the game cannot start.
+function Get-ContentDir($Game) { Join-Path (Split-Path (Split-Path $Game.Win64 -Parent) -Parent) 'Content\Paks\~mods' }
+function Get-ContentFiles($Game) {
+    $state = Get-State $Game
+    if ($state -and $state.content_files) { return @($state.content_files) }
+    return @()
+}
+function Get-EngineLines($Game) {
+    $state = Get-State $Game
+    if ($state -and $state.engine_ini) { return @($state.engine_ini) }
+    return @()
+}
+function Set-EngineIni($Lines, [bool]$On) {
+    if (-not $Lines -or @($Lines).Count -eq 0) { return }
+    $path = Join-Path $ConfigDir 'Engine.ini'
+    $text = ''
+    $unicode = $false
+    if (Test-Path $path) {
+        $item = Get-Item $path -Force
+        if ($item.IsReadOnly) { $item.IsReadOnly = $false }
+        $bytes = [IO.File]::ReadAllBytes($path)
+        $unicode = ($bytes.Length -ge 2 -and $bytes[0] -eq 0xFF -and $bytes[1] -eq 0xFE)
+        if ($unicode) { $text = [Text.Encoding]::Unicode.GetString($bytes, 2, $bytes.Length - 2) }
+        else { $text = (New-Object Text.UTF8Encoding($false)).GetString($bytes) }
+    } elseif (-not $On) { return }
+    $rows = New-Object System.Collections.Generic.List[string]
+    if ($text.Trim() -ne '') { foreach ($row in ($text -split "`r?`n")) { $rows.Add($row) } }
+    foreach ($line in @($Lines)) {
+        $section = '[' + $line.section + ']'
+        $entry = $line.key + '=' + $line.value
+        # take out any earlier copy of this key in this section
+        $inSection = $false
+        for ($i = 0; $i -lt $rows.Count; $i++) {
+            $trimmed = $rows[$i].Trim()
+            if ($trimmed.StartsWith('[')) { $inSection = ($trimmed -ieq $section) }
+            elseif ($inSection -and $trimmed.StartsWith($line.key + '=', [StringComparison]::OrdinalIgnoreCase)) { $rows.RemoveAt($i); $i-- }
+        }
+        if ($On) {
+            $at = -1
+            for ($i = 0; $i -lt $rows.Count; $i++) { if ($rows[$i].Trim() -ieq $section) { $at = $i; break } }
+            if ($at -ge 0) { $rows.Insert($at + 1, $entry) }
+            else {
+                if ($rows.Count -gt 0 -and $rows[$rows.Count - 1].Trim() -ne '') { $rows.Add('') }
+                $rows.Add('; Added by the Species: Unknown mod pack. Read-only on purpose: the game deletes this file on exit otherwise.')
+                $rows.Add($section)
+                $rows.Add($entry)
+            }
+        } else {
+            # drop the section header and our comment if nothing is left under it
+            for ($i = 0; $i -lt $rows.Count; $i++) {
+                if ($rows[$i].Trim() -ieq $section) {
+                    $next = $i + 1
+                    while ($next -lt $rows.Count -and $rows[$next].Trim() -eq '') { $next++ }
+                    if ($next -ge $rows.Count -or $rows[$next].Trim().StartsWith('[')) {
+                        $rows.RemoveAt($i)
+                        while ($i -gt 0 -and $rows[$i - 1].Trim().StartsWith(';') -and $rows[$i - 1] -match 'mod') { $rows.RemoveAt($i - 1); $i-- }
+                    }
+                    break
+                }
+            }
+        }
+    }
+    $out = (($rows.ToArray()) -join "`r`n").TrimEnd() + "`r`n"
+    if (-not $On -and $out.Trim() -eq '') {
+        if (Test-Path $path) { Remove-Item $path -Force }
+        return
+    }
+    if (-not (Test-Path $ConfigDir)) { New-Item -ItemType Directory -Force $ConfigDir | Out-Null }
+    if ($unicode) { [IO.File]::WriteAllText($path, $out, [Text.Encoding]::Unicode) }
+    else { [IO.File]::WriteAllText($path, $out, (New-Object Text.UTF8Encoding($false))) }
+    if ($On) { (Get-Item $path -Force).IsReadOnly = $true }
+}
+function Set-Content-State($Game, [bool]$On) {
+    $dir = Get-ContentDir $Game
+    $files = Get-ContentFiles $Game
+    $ready = (@($files).Count -gt 0)
+    foreach ($name in $files) {
+        if ($name -notmatch '^[A-Za-z0-9_\-\.]+$') { continue }
+        $live = Join-Path $dir $name
+        $parked = "$live.off"
+        if ($On) {
+            if ((Test-Path $parked) -and -not (Test-Path $live)) { Rename-Item $parked $name }
+            elseif ((Test-Path $parked) -and (Test-Path $live)) { Remove-Item $parked -Force }
+            if (-not (Test-Path $live)) { $ready = $false }
+        } else {
+            if (Test-Path $live) {
+                if (Test-Path $parked) { Remove-Item $parked -Force }
+                Rename-Item $live "$name.off"
+            }
+        }
+    }
+    # the line goes in only when every content file is really there
+    Set-EngineIni (Get-EngineLines $Game) ($On -and $ready)
 }
 
 function Set-Loader($Game, [bool]$On) {
@@ -159,6 +262,7 @@ function Set-Loader($Game, [bool]$On) {
             Rename-Item $live 'dwmapi.dll.off'
         }
     }
+    try { Set-Content-State $Game $On } catch { Say "Mod content could not be switched ($($_.Exception.Message))." 'DarkYellow' }
 }
 function Test-LoaderOn($Game) { Test-Path (Join-Path $Game.Win64 'dwmapi.dll') }
 
@@ -213,6 +317,55 @@ function Update-Mods($Game, $Manifest) {
     }
     Expand-Pack $zip $Game.Win64
     return $new
+}
+
+# Download the content pack if it changed, replace the files in the game's ~mods folder, and remember what was
+# put there (so it can be parked, replaced or removed later).
+function Update-Content($Game, $Manifest) {
+    $want = $Manifest.content
+    $state = Get-State $Game
+    $have = $null
+    if ($state) { $have = $state.content }
+    $wantId = $null
+    if ($want) { $wantId = $want.id }
+    if ($have -eq $wantId) { return $false }
+    $dir = Get-ContentDir $Game
+    # out with the old: the line first, then the files
+    Set-EngineIni (Get-EngineLines $Game) $false
+    foreach ($name in (Get-ContentFiles $Game)) {
+        if ($name -notmatch '^[A-Za-z0-9_\-\.]+$') { continue }
+        foreach ($file in (Join-Path $dir $name), (Join-Path $dir "$name.off")) {
+            if (Test-Path $file) { Remove-Item $file -Force }
+        }
+    }
+    $files = @()
+    $lines = @()
+    if ($want) {
+        $zip = Get-Download $want.url $want.sha256 ("content-" + $want.id + ".zip")
+        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Force $dir | Out-Null }
+        $root = [IO.Path]::GetFullPath($dir).TrimEnd('\') + '\'
+        $archive = [IO.Compression.ZipFile]::OpenRead($zip)
+        try {
+            foreach ($entry in $archive.Entries) {
+                if ($entry.FullName -notmatch '^[A-Za-z0-9_\-\.]+$') { throw "Bad file name in content pack: $($entry.FullName)" }
+                [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, (Join-Path $root $entry.FullName), $true)
+                $files += $entry.FullName
+            }
+        } finally { $archive.Dispose() }
+        foreach ($line in @($want.engine_ini)) {
+            if ($line.section -notmatch '^/Script/[A-Za-z0-9_\.]+$' -or $line.key -notmatch '^[A-Za-z0-9_]+$' -or $line.value -notmatch '^/Game/Mods/[A-Za-z0-9_/\.]+$') { throw 'Bad settings line in content pack.' }
+            $lines += [ordered]@{ section = $line.section; key = $line.key; value = $line.value }
+        }
+    }
+    $path = Get-StatePath $Game
+    $state = Get-State $Game
+    $table = [ordered]@{}
+    if ($state) { foreach ($p in $state.PSObject.Properties) { $table[$p.Name] = $p.Value } }
+    $table['content'] = $wantId
+    $table['content_files'] = @($files)
+    $table['engine_ini'] = @($lines)
+    $table | ConvertTo-Json -Depth 5 | Set-Content -Path $path -Encoding UTF8
+    return $true
 }
 
 function Update-Self($Manifest) {
@@ -303,6 +456,12 @@ function Sync-Mods($Game, $Manifest) {
         } elseif ($state.pack -ne $Manifest.version -or (@($state.tested_builds) -join ',') -ne (@($Manifest.game.tested_builds) -join ',')) {
             Set-State $Game $Manifest @($state.mod_names)
         }
+        $wantContent = $null
+        if ($Manifest.content) { $wantContent = $Manifest.content.id }
+        if ((Get-State $Game).content -ne $wantContent) {
+            if ($wantContent) { Say 'Updating mod content...' 'Cyan' }
+            if (Update-Content $Game $Manifest) { $changed = $true }
+        }
     } catch {
         Say "Update failed: $($_.Exception.Message)" 'Red'
         if (-not (Get-State $Game)) {
@@ -338,7 +497,7 @@ try {
         Say "Game folder : $($game.Win64)"
         Say "Game build  : $($game.BuildId)"
         Say "Game running: $(Test-GameRunning $game)"
-        if ($state) { Say "Installed   : pack $($state.pack), mods [$(@($state.mod_names) -join ', ')], loader on = $(Test-LoaderOn $game)" }
+        if ($state) { Say "Installed   : pack $($state.pack), mods [$(@($state.mod_names) -join ', ')], content [$(@($state.content_files) -join ', ')], loader on = $(Test-LoaderOn $game)" }
         else { Say 'Installed   : nothing from this launcher' }
         if ($manifest) { Say "Published   : pack $($manifest.version), enabled = $($manifest.enabled), tested builds [$(@($manifest.game.tested_builds) -join ', ')]" }
         exit 0
@@ -381,6 +540,13 @@ try {
         'uninstall' {
             $state = Get-State $game
             if ($state) {
+                Set-EngineIni (Get-EngineLines $game) $false
+                foreach ($name in (Get-ContentFiles $game)) {
+                    if ($name -notmatch '^[A-Za-z0-9_\-\.]+$') { continue }
+                    foreach ($file in (Join-Path (Get-ContentDir $game) $name), (Join-Path (Get-ContentDir $game) "$name.off")) {
+                        if (Test-Path $file) { Remove-Item $file -Force }
+                    }
+                }
                 Remove-Item (Join-Path $game.Win64 'ue4ss') -Recurse -Force
                 foreach ($name in 'dwmapi.dll', 'dwmapi.dll.off') {
                     $file = Join-Path $game.Win64 $name
@@ -393,7 +559,7 @@ try {
             }
             $cache = Join-Path $HomeDir 'cache'
             if (Test-Path $cache) { Remove-Item $cache -Recurse -Force }
-            Say 'Mods, the mod loader and the desktop shortcuts have been removed. The game itself was not touched.' 'Green'
+            Say 'Mods, mod content, the mod loader and the desktop shortcuts have been removed. The game itself was not touched.' 'Green'
             Say "You can delete this folder too: $HomeDir"
             Wait-Key
         }

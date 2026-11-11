@@ -27,8 +27,10 @@ You never need to reinstall. New versions arrive the next time you use the Modde
 
 - The launcher: `%LOCALAPPDATA%\SpeciesMods`
 - In the game folder (`SpeciesUnknown\Binaries\Win64`): `dwmapi.dll` and a `ue4ss` folder. This is [UE4SS](https://github.com/UE4SS-RE/RE-UE4SS), an open-source script loader (MIT license), plus the mods in `ue4ss\Mods`.
+- In the game folder (`SpeciesUnknown\Content\Paks\~mods`): the content the mods add (about 25 MB).
+- One line in the game's own settings file, `%LOCALAPPDATA%\SpeciesUnknown\Saved\Config\Windows\Engine.ini`, which tells the game to load that content. The file is made read-only because the game deletes it otherwise.
 
-It does not change the game's own files or your saves.
+The No Mods shortcut switches all of it off, and the uninstaller removes all of it. It does not change the game's own files or your saves.
 
 ## Remove
 
@@ -36,4 +38,5 @@ Run `Uninstall Species Mods.bat` in `%LOCALAPPDATA%\SpeciesMods`. It removes the
 
 ## Mods in the pack
 
+- **Bernard**: a new, seventh species. A large hermit crab that lives in a cargo pod and waits disguised as cargo. Some missions (about one in seven) are his; the host's game decides which. Everyone in the lobby must be using this pack, on the same version, for a Bernard mission to work: if the host has updated, launch through the Modded shortcut before joining.
 - **Encounter Variety**: turns the game's weighted monster pick into an even, shuffled rotation, so you see every eligible species before any repeats. Only the host's copy has any effect.
