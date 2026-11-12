@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": 4,
+  "version": 5,
   "enabled": true,
-  "message": "Pack 4: fixes the freeze and crashes in Bernard fights, Bernard now retreats when you keep shooting him, and he can no longer spawn locked away behind a door. Works with today's game update. Everyone in the lobby has to start the game from the Modded shortcut.",
+  "message": "Pack 5: Bernard can now force his way through heavy doors if he is cut off from you, so locking yourselves in is no longer safe. Also fixes the freeze and crashes in Bernard fights. Everyone in the lobby has to start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
@@ -21,10 +21,10 @@
     "size": 9271318
   },
   "mods": {
-    "id": "e5ff2bc3db09",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-e5ff2bc3db09.zip",
-    "sha256": "66387a04bf63dc3719b7b5be8838bcd9c1ef4effc80ba9355fec6fb928fd693c",
-    "size": 141617,
+    "id": "eeb5706320d2",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-eeb5706320d2.zip",
+    "sha256": "ad2c4677bf2aeccdac20bfb54e4fa42a618c77ec506815cf4155f795e6b5c31d",
+    "size": 142754,
     "list": [
       {
         "name": "EncounterVariety"
