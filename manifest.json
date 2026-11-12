@@ -1,12 +1,12 @@
 {
   "schema": 1,
-  "version": 3,
+  "version": 4,
   "enabled": true,
-  "message": "Pack 3: crews of up to 6 players, and Steam invites (in a lobby, right-click a friend in your Steam friends list and pick Invite to Game). Everyone in the lobby has to start the game from the Modded shortcut so you are all on the same pack.",
+  "message": "Pack 4: fixes the freeze and crashes in Bernard fights, Bernard now retreats when you keep shooting him, and he can no longer spawn locked away behind a door. Works with today's game update. Everyone in the lobby has to start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
-      "26480196"
+      "26617965"
     ]
   },
   "launcher": {
@@ -21,10 +21,10 @@
     "size": 9271318
   },
   "mods": {
-    "id": "52e57501a765",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-52e57501a765.zip",
-    "sha256": "9e988555cf507165658956588106b8d57513ce3b43fdca9b0e024d2beb86b0bf",
-    "size": 133841,
+    "id": "e5ff2bc3db09",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-e5ff2bc3db09.zip",
+    "sha256": "66387a04bf63dc3719b7b5be8838bcd9c1ef4effc80ba9355fec6fb928fd693c",
+    "size": 141617,
     "list": [
       {
         "name": "EncounterVariety"
