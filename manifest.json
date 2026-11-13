@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": 6,
+  "version": 7,
   "enabled": true,
-  "message": "Pack 6: Bernard can now CHARGE (watch for him rearing up and shrieking), swipes at anyone circling his sides, and has a whole new set of sounds. Everyone in the lobby has to start the game from the Modded shortcut.",
+  "message": "Pack 7: Bernard now uses the vents once he loses his pod, disappears after he retreats, and his charge hits less hard. New: CrewQuarters, decorate your cabin (N to build, X to pick up). Everyone in the lobby has to start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
@@ -21,10 +21,10 @@
     "size": 9271318
   },
   "mods": {
-    "id": "89b4933652a0",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-89b4933652a0.zip",
-    "sha256": "59fed3b269071830b0776bde5d06755fd2829f23390a400b6d125301d7612073",
-    "size": 145287,
+    "id": "d9528015cf7f",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-d9528015cf7f.zip",
+    "sha256": "e4092452c75227e00a99d25633616d686c522de60b63f449ae01b5baacceb540",
+    "size": 179732,
     "list": [
       {
         "name": "EncounterVariety"
@@ -37,14 +37,17 @@
       },
       {
         "name": "SteamInvite"
+      },
+      {
+        "name": "CrewQuarters"
       }
     ]
   },
   "content": {
-    "id": "11249d4ea3b0",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/content-11249d4ea3b0.zip",
-    "sha256": "cc9fef3ad6da97c444297fa71a5ea5f826b109072573c4183deb0eb805079371",
-    "size": 24490482,
+    "id": "f0e9f838a771",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/content-f0e9f838a771.zip",
+    "sha256": "01576c454ce7fd3be14c755bb183cbfce9b026ba9528ad3a07dfa584d03b07df",
+    "size": 43364980,
     "files": [
       "pakchunk42-NewMonster_P.pak",
       "pakchunk42-NewMonster_P.ucas",
