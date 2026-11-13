@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": 7,
+  "version": 8,
   "enabled": true,
-  "message": "Pack 7: Bernard now uses the vents once he loses his pod, disappears after he retreats, and his charge hits less hard. New: CrewQuarters, decorate your cabin (N to build, X to pick up). Everyone in the lobby has to start the game from the Modded shortcut.",
+  "message": "Pack 8: CrewQuarters vapes. Buy one on your cabin's Personal Board (QUARTERS, Vapes), then Y to take it out, hold Y to take a drag and let go to blow a cloud, Shift+Y for another flavour. Works on missions too. Start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
@@ -21,10 +21,10 @@
     "size": 9271318
   },
   "mods": {
-    "id": "d9528015cf7f",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-d9528015cf7f.zip",
-    "sha256": "e4092452c75227e00a99d25633616d686c522de60b63f449ae01b5baacceb540",
-    "size": 179732,
+    "id": "ffc777492c51",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-ffc777492c51.zip",
+    "sha256": "0c2f7db5b9f1b9814bb4f94af50da6e9648f58fc412c89bf0ff2d3c12957348b",
+    "size": 183212,
     "list": [
       {
         "name": "EncounterVariety"
