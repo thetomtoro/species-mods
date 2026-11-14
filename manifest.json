@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": 8,
+  "version": 9,
   "enabled": true,
-  "message": "Pack 8: CrewQuarters vapes. Buy one on your cabin's Personal Board (QUARTERS, Vapes), then Y to take it out, hold Y to take a drag and let go to blow a cloud, Shift+Y for another flavour. Works on missions too. Start the game from the Modded shortcut.",
+  "message": "Pack 9: crash fix. Bernard and Encounter Variety were registering hooks from a background thread, which could crash the game at random (even on the ship). Start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
@@ -21,10 +21,10 @@
     "size": 9271318
   },
   "mods": {
-    "id": "ffc777492c51",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-ffc777492c51.zip",
-    "sha256": "0c2f7db5b9f1b9814bb4f94af50da6e9648f58fc412c89bf0ff2d3c12957348b",
-    "size": 183212,
+    "id": "23feb9c39c5d",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/mods-23feb9c39c5d.zip",
+    "sha256": "34b36f99952bdcee4c8e211b4d6f54952d2f7f8c49fed6ed88dbecc5cd3745d3",
+    "size": 183520,
     "list": [
       {
         "name": "EncounterVariety"
