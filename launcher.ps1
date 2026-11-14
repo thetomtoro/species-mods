@@ -84,17 +84,29 @@ function Test-GameRunning($Game) {
 }
 
 function Get-Manifest {
-    try {
-        $separator = '?'
-        if ($ManifestUrl -match '\?') { $separator = '&' }
-        $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 8 -Uri ($ManifestUrl + $separator + 't=' + [DateTime]::UtcNow.Ticks)
-        $manifest = $response.Content | ConvertFrom-Json
-        if ($manifest.schema -ne 1) { throw "unsupported pack format $($manifest.schema)" }
-        return $manifest
-    } catch {
-        Say "Could not reach the mod server ($($_.Exception.Message))." 'DarkYellow'
-        return $null
+    # a few tries, longer waits, and a second address: a single 8 s timeout left a friend on stale, switched-off
+    # mods twice (11-14)
+    $urls = @($ManifestUrl)
+    if ($ManifestUrl -like 'https://raw.githubusercontent.com/*/main/*') {
+        $parts = $ManifestUrl.Substring('https://raw.githubusercontent.com/'.Length).Split('/')
+        $urls += ('https://github.com/' + $parts[0] + '/' + $parts[1] + '/raw/main/' + (($parts | Select-Object -Skip 3) -join '/'))
     }
+    $last = $null
+    for ($try = 1; $try -le 3; $try++) {
+        foreach ($url in $urls) {
+            try {
+                $separator = '?'
+                if ($url -match '\?') { $separator = '&' }
+                $response = Invoke-WebRequest -UseBasicParsing -TimeoutSec 20 -Uri ($url + $separator + 't=' + [DateTime]::UtcNow.Ticks)
+                $manifest = $response.Content | ConvertFrom-Json
+                if ($manifest.schema -ne 1) { throw "unsupported pack format $($manifest.schema)" }
+                return $manifest
+            } catch { $last = $_.Exception.Message }
+        }
+        if ($try -lt 3) { Say "Mod server slow, trying again ($try of 3)..." 'DarkGray' }
+    }
+    Say "Could not reach the mod server ($last)." 'DarkYellow'
+    return $null
 }
 
 function Get-Download([string]$Url, [string]$Sha256, [string]$Name) {
@@ -424,7 +436,9 @@ function Sync-Mods($Game, $Manifest) {
             Say "The game updated (build $($Game.BuildId)) and the mods could not be checked against it. Mods are off for this session." 'Yellow'
             return $false
         }
-        Say "Using the mods already installed (pack $($state.pack))." 'DarkYellow'
+        # switch them on: the last launch may have been No Mods, which parks everything (11-14 bug)
+        Set-Loader $Game $true
+        Say "Using the mods already installed (pack $($state.pack)). Start again later to get updates." 'DarkYellow'
         return (Test-LoaderOn $Game)
     }
     if (-not $Manifest.enabled) {

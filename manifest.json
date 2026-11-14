@@ -1,8 +1,8 @@
 {
   "schema": 1,
-  "version": 9,
+  "version": 10,
   "enabled": true,
-  "message": "Pack 9: crash fix. Bernard and Encounter Variety were registering hooks from a background thread, which could crash the game at random (even on the ship). Start the game from the Modded shortcut.",
+  "message": "Pack 9: crash fix, and the launcher now switches mods back on even when GitHub is slow (that left mods off after using No Mods). Start the game from the Modded shortcut.",
   "game": {
     "app_id": 2747330,
     "tested_builds": [
@@ -10,9 +10,9 @@
     ]
   },
   "launcher": {
-    "id": "c5a04492dd5a",
-    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/launcher-c5a04492dd5a.ps1",
-    "sha256": "c5a04492dd5a99b4379fa67ea2ddd652bbdf621ce6941653bd8a0bca50e363ef"
+    "id": "960521b5026a",
+    "url": "https://github.com/thetomtoro/species-mods/releases/download/pack/launcher-960521b5026a.ps1",
+    "sha256": "960521b5026a73115476a264ec2b9d8d8b8b6ac10abc9be79d448625063cb40f"
   },
   "loader": {
     "id": "5fb3620683c1",
